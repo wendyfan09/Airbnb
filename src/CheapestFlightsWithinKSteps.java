@@ -25,8 +25,10 @@ public class CheapestFlightsWithinKSteps {
         }
     }
     public class Solution{
+        //BFS
         public int findCheapestPrice(int n, int[][] flights, int src, int dst, int K){
             Map<Integer, List<Integer>> outdegrees = new HashMap<>();
+            //use this map to remember the array departure index array;
             for(int i = 0; i < flights.length; i++){
                 if(outdegrees.containsKey(flights[i][0])){
                     outdegrees.get(flights[i][0]).add(i);
@@ -37,6 +39,7 @@ public class CheapestFlightsWithinKSteps {
                 }
             }
 
+            //bfs queue, give the index the temp cost from src.
             Queue<Pair<Integer, Integer>> que = new LinkedList<>();
 
             int k = 0, ans = Integer.MAX_VALUE;
@@ -45,12 +48,15 @@ public class CheapestFlightsWithinKSteps {
                 que.add(new Pair <Integer, Integer>(outdegrees.get(src).get(i), 0));
             }
 
+            //use memo to remember from src to specific airport's minium cost.
             NavigableMap<Integer,Integer> memo = new TreeMap<Integer, Integer>();
 
             while (!que.isEmpty() && k <= K) {
                 int size = que.size();
                 for (int i = 0; i < size; ++i) {
+                    //get array index which is departure from src
                     int curr_f = que.peek().getKey();
+                    //start and end point
                     int start = flights[curr_f][0];
                     int end = flights[curr_f][1];
                     int curr_mon = que.peek().getValue() + flights[curr_f][2];
@@ -66,6 +72,8 @@ public class CheapestFlightsWithinKSteps {
                     if (end == dst) {
                         ans = Math.min(ans, curr_mon);
                     }
+
+                    //add sub path from this start's end point
                     if (outdegrees.containsKey(end)) {
                         for (int j = 0; j < outdegrees.get(end).size(); ++j) {
                             que.add(new Pair <Integer, Integer>(outdegrees.get(end).get(j), curr_mon));

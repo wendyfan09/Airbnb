@@ -20,6 +20,7 @@ public class ListofListIterator {
 
         @Override
         public boolean hasNext() {
+            //if current col is empty, then we should go to check next row
             while((colIter == null || !colIter.hasNext()) && rowIter.hasNext())
                 colIter = rowIter.next().iterator();
                 return colIter != null && colIter.hasNext();

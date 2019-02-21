@@ -53,6 +53,7 @@ public class WaterLand {
             }
 
             for(int height = maxHeight; height >= 0; height--){
+                //print from highest point; layer by layer
                 for(int i = 0; i < n; i++){
                     if(height <= heights[i]){
                         System.out.print("+");

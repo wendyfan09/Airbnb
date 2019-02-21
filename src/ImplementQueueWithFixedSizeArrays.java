@@ -23,13 +23,15 @@ public class ImplementQueueWithFixedSizeArrays {
         }
 
         public void offer(int num){
+            //if we are at last index of fixedSize, then we need to create a new list and save it in tail of list
             if(tail == fixedSize - 1) {
                 List<Object> newList = new ArrayList<>();
                 newList.add(num);
+                //save next new list at tail
                 tailList.add(newList);
                 tailList = (List<Object>) tailList.get(tail);
                 tail = 0;
-            }else{
+            }else{ //not in last index,then directly add it;
                 tailList.add(num);
             }
             count++;
@@ -42,7 +44,7 @@ public class ImplementQueueWithFixedSizeArrays {
 
             head++;
             count--;
-
+            //if head reach last index, then we need refresh headlist by getting new list from last index;
             if(head == fixedSize - 1){
                 List<Object> newList = (List<Object>) headList.get(head);
                 headList.clear();

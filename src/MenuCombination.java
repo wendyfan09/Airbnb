@@ -27,6 +27,7 @@ public class MenuCombination {
             return res;
         }
 
+        //dfs
         private void search(List<List<Double>> res, int[] centsPrices, int start, int centsTarget,
                             List<Double> curCombo, double[] prices){
             //find one match combination

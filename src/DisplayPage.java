@@ -27,6 +27,7 @@ public class DisplayPage {
                     if(!input.isEmpty()) {
                         res.add(" ");
                     }
+                    //clear set for next page
                     set.clear();
                     iter = input.iterator();
                     reachEnd = false;

@@ -30,6 +30,7 @@ public class fileSystem {
             if(!pathMap.containsKey(path)) return false;
             pathMap.put(path, value);
 
+            //Write following logic only if they ask
             //Trigger Callback
             String curPath = path;
             while(curPath.length() > 0){
@@ -44,13 +45,18 @@ public class fileSystem {
         }
 
         public Integer get(String path){
+            if(!pathMap.containsKey(path)) return -1;
             return pathMap.get(path);
         }
 
-        public boolean watch(String path, Runnable callback){
+        public boolean watch(String path, String alert){
             if(!pathMap.containsKey(path)) return false;
-
-            callbackMap.put(path, callback);
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    System.out.println(alert);
+                }
+            };
+            callbackMap.put(path, runnable);
             return true;
         }
 
@@ -64,6 +70,8 @@ public class fileSystem {
             assertEquals(1, (int)sol.get("/a"));
             assertTrue(sol.create("/a/b",2));
             assertEquals(2, (int)sol.get("/a/b"));
+            sol.watch("/a", "/a call back triggerred");
+            sol.watch("/a/b", "/a/b call back triggerred");
             assertTrue(sol.set("/a/b",3));
             assertEquals(3, (int)sol.get("/a/b"));
             assertFalse(sol.create("/c/d",4));

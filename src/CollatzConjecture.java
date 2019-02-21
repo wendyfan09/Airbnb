@@ -13,12 +13,15 @@ public class CollatzConjecture {
             int step = 0;
             for(int i = 1; i <= num; i++){
                 int t = findStep(i);
+                //use map to remember the exsiting number's step;
                 map.put(i, t);
+                //always keep the longest steps;
                 step = Math.max(step, t);
             }
             return step;
         }
 
+        //recursive method to calculate step
         private int findStep(int num){
             if(num <= 1) return 1;
             if(map.containsKey(num)) return map.get(num);
