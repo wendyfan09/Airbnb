@@ -1,59 +1,48 @@
 import org.junit.Test;
 
-public class WaterLand {
-    public class Solution{
-        public void pourWater(int[] heights, int location, int water){
-            //use same length array to remember water location;
+public class WaterLand{
+    public static class Solution{
+        public static void pourWater(int[] heights, int location, int water){
             int[] waters = new int[heights.length];
-            int pourLocation;
-
+            if(heights == null || heights.length == 0 || water == 0){
+                print(heights, waters);
+            }
+            int index;
             while(water > 0){
-                int left = location - 1;
-                while(left >= 0){
-                    //check whether pour water on current location will make water+hight higher than right neighbor
-                    if(heights[left] + waters[left] > heights[left + 1] + waters[left + 1]) break;
-                    left--;
+                index = location;
+                for(int i = location - 1; i >= 0; i--){
+                    if(heights[i] + waters[i] > heights[index] + waters[index]){
+                        break;
+                    }else if(heights[i] + waters[i] < heights[index] + waters[index]){
+                        index = i;
+                    }
                 }
-                //compare left + 1 position with location
-                if(heights[left + 1] + waters[left + 1] < heights[location] + waters[location]){
-                    pourLocation = left + 1;
-                    waters[pourLocation]++;
+                if(index != location){
+                    waters[index]++;
                     water--;
                     continue;
                 }
-
-                //left side is not available, let's check right side; similar logic to left side;
-                int right = location + 1;
-                while(right < heights.length){
-                    if(heights[right] + waters[right] > heights[right -1] + waters[right - 1]) break;
-                    right++;
+                for(int i = location + 1; i < heights.length; i++){
+                    if(heights[i] + waters[i] > heights[index] + waters[index]){
+                        break;
+                    }else if(heights[i] + waters[i] < heights[index] + waters[index]){
+                        index = i;
+                    }
                 }
-                if(heights[right - 1] + waters[right - 1] < heights[location] + waters[location]){
-                    pourLocation = right - 1;
-                    waters[pourLocation]++;
-                    water--;
-                    continue;
-                }
-
-                //if left and right side are all full, then we can directly pour the water at location
-                pourLocation = location;
-                waters[pourLocation]++;
+                waters[index]++;
                 water--;
             }
             print(heights, waters);
         }
 
-        //print result;
-        private void print(int[] heights, int[] waters){
+        private static void print(int[] heights, int[] waters){
             int n = heights.length;
-
             int maxHeight = 0;
             for(int i = 0; i < n; i++){
                 maxHeight = Math.max(maxHeight, heights[i] + waters[i]);
             }
 
             for(int height = maxHeight; height >= 0; height--){
-                //print from highest point; layer by layer
                 for(int i = 0; i < n; i++){
                     if(height <= heights[i]){
                         System.out.print("+");
@@ -67,19 +56,16 @@ public class WaterLand {
             }
             System.out.println();
         }
-    }
 
-    public static class UnitTest{
-        @Test
-        public void test(){
-            Solution sol = new WaterLand().new Solution();
+        public static void main(String[] str){
             int[] waterLand = new int[]{5,4,2,1,2,3,2,1,0,1,2,4};
-            sol.pourWater(waterLand, 5, 1);
-            sol.pourWater(waterLand, 5, 5);
-            sol.pourWater(waterLand, 5, 100);
+            pourWater(waterLand, 5, 1);
+            pourWater(waterLand, 5, 5);
+            pourWater(waterLand, 5, 100);
 
             waterLand = new int[]{2,1,1,2,1,2,2};
-            sol.pourWater(waterLand, 3,4);
+            pourWater(waterLand, 3,4);
         }
     }
+
 }

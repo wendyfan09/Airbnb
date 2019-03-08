@@ -1,81 +1,77 @@
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.util.*;
-public class fileSystem {
-
-    public class Solution {
-        Map<String, Integer> pathMap;
-        Map<String, Runnable> callbackMap;
-
-        public Solution(){
-            this.pathMap = new HashMap<>();
-            this.callbackMap = new HashMap<>();
-            pathMap.put("", 0);
-        }
-
-        public boolean create(String path, int value){
-            //check whether path exsited already
-            if(pathMap.containsKey(path)) return false;
-
-            //check parent path exsited already
-            int lastSlashIndex = path.lastIndexOf("/");
-            if(!pathMap.containsKey(path.substring(0, lastSlashIndex))) return false;
-
-            //create new path
-            pathMap.put(path, value);
-            return true;
-        }
-
-        public boolean set(String path, int value){
-            if(!pathMap.containsKey(path)) return false;
-            pathMap.put(path, value);
-
-            //Write following logic only if they ask
-            //Trigger Callback
-            String curPath = path;
-            while(curPath.length() > 0){
-                if(callbackMap.containsKey(curPath)){
-                    callbackMap.get(curPath).run();
-                }
-                int lastSlashIndex = curPath.lastIndexOf("/");
-                curPath = curPath.substring(0, lastSlashIndex);
-            }
-
-            return true;
-        }
-
-        public Integer get(String path){
-            if(!pathMap.containsKey(path)) return -1;
-            return pathMap.get(path);
-        }
-
-        public boolean watch(String path, String alert){
-            if(!pathMap.containsKey(path)) return false;
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    System.out.println(alert);
-                }
-            };
-            callbackMap.put(path, runnable);
-            return true;
-        }
-
+public class fileSystem{
+    class Dir{
+        HashMap<String, Dir> dirs = new HashMap<>();
+        HashMap<String, String> files = new HashMap<>();
     }
-
-    public static class UnitTest {
+    Dir root;
+    public fileSystem(){
+        root = new Dir();
+    }
+    public class Solution{
+        public List<String> ls(String path){
+            Dir t = root;
+            List<String> files = new ArrayList<>();
+            if(!path.equals("/")){
+                String[] d = path.split("/");
+                for(int i = 1; i < d.length - 1; i++){
+                    t = t.dirs.get(d[i]);
+                }
+                if(t.dirs.containsKey(d[d.length - 1])){
+                    files.add(t.files.get(d[d.length - 1]));
+                }else{
+                    t = t.dirs.get(d[d.length - 1]);
+                }
+            }
+            files.addAll(new ArrayList<>(t.dirs.keySet()));
+            files.addAll(new ArrayList<>(t.files.keySet()));
+            Collections.sort(files);
+            return files;
+        }
+        public void mkdir(String path){
+            Dir t = root;
+            String[] d = path.split("/");
+            for(int i = 1; i < d.length; i++){
+                if(!t.dirs.containsKey(d[i])) t.dirs.put(d[i], new Dir());
+                t = t.dirs.get(d[i]);
+            }
+        }
+        public void addContentToPath(String path, String content){
+            Dir t = root;
+            String[] d = path.split("/");
+            for(int i = 1; i < d.length - 1; i++){
+                t = t.dirs.get(d[i]);
+            }
+            t.files.put(d[d.length - 1], t.files.getOrDefault(d[d.length - 1], "") + content);
+        }
+        public String readContentFromPath(String path){
+            Dir t = root;
+            String[] d = path.split("/");
+            for(int i = 1; i < d.length - 1; i++){
+                t = t.dirs.get(d[i]);
+            }
+            return t.files.get(d[d.length - 1]);
+        }
+    }
+    public static class UnitTest{
         @Test
         public void test(){
             Solution sol = new fileSystem().new Solution();
-            assertTrue(sol.create("/a",1));
-            assertEquals(1, (int)sol.get("/a"));
-            assertTrue(sol.create("/a/b",2));
-            assertEquals(2, (int)sol.get("/a/b"));
-            sol.watch("/a", "/a call back triggerred");
-            sol.watch("/a/b", "/a/b call back triggerred");
-            assertTrue(sol.set("/a/b",3));
-            assertEquals(3, (int)sol.get("/a/b"));
-            assertFalse(sol.create("/c/d",4));
-            assertFalse(sol.set("/c/d",4));
+            List<String> result = sol.ls("/");
+            assertEquals(0, result.size());
+            sol.mkdir("/a/b/c");
+            sol.addContentToPath("/a/b/c/d", "hello");
+            String content = sol.readContentFromPath("/a/b/c/d");
+            assertEquals("hello", content);
+            result = sol.ls("/a/b/c/d");
+            assertEquals("d", result.get(0));
+            assertEquals("hello", result.get(1));
+            result = sol.ls("/");
+            for(String s: result){
+                System.out.println(s);
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ public class FindMedianInLargeIntegerFileOfIntegers {
             for(int num : nums){
                 if(num <= guess){
                     count++;
-                    //if count == k, we should return largest elemetn in the file that is smaller than the guess
+                    //if count == k, we should return largest element in the file that is smaller than the guess
                     res = Math.max(res, num);
                 }
             }

@@ -1,126 +1,62 @@
-import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
-public class AlienDictionary {
-    public class Solution {
-        public String alienOrder(String[] words) {
-            // 1.Uses the order of word to determine which character comes first. And construct a direct graph(有向图)
-            // 2.Base on the direct graph do topology sort.
-            Map<Character, Set<Character>> graph = constructGraph(words);
-            return topologicalSorting(graph);
-        }
-
-
-        private Map<Character, Set<Character>> constructGraph(String[] words) {
-            Map<Character, Set<Character>> graph = new HashMap<>();
-
-            // create nodes
-
-            // Get all characters from words
-            // For words = [abcd, abce, b]
-            // get characters [a, b, c, d, e]
-            for (int i = 0; i < words.length; i++) {
-                for (int j = 0; j < words[i].length(); j++) {
-                    char c = words[i].charAt(j);
-                    if (!graph.containsKey(c)) {
-                        graph.put(c, new HashSet<Character>());
-                    }
-                }
-            }
-
-            // create edges
-
-            // Compare all pair of words[i] and words[i+1].
-            // Get character order based on word order.
-            // For example:
-            //      words = [abcd, abce, b]
-            // i=0:     abcd > abce   ===     d > e
-            // i=1:     abcd > b      ===     a > b
-            for (int i = 0; i <  words.length - 1; i++) {
-                int index = 0;
-                while (index < words[i].length() && index < words[i + 1].length()) {
-                    if (words[i].charAt(index) != words[i + 1].charAt(index)) {
-                        graph.get(words[i].charAt(index)).add(words[i + 1].charAt(index));
-                        break;
-                    }
-                    index++;
-                }
-            }
-
-            // After previous steps, we get graph = a > {b}, b > {}, c > {}, d > {e}, e > {}.
-            // i.e. we only get two relationship, a>b and d>e.
-
-            return graph;
-        }
-
-        // Initialize the "indegreee" map, which says in the graph we constrcut at "constructGraph", for each character, how many char is bigger than it.
-        // For example, we have d>e and a>b in previous example, then this function will return {{e, 1}. {b, 1}, {a, 0}, {c, 0}, {e,0}}
-        private Map<Character, Integer> getIndegree(Map<Character, Set<Character>> graph) {
-            Map<Character, Integer> indegree = new HashMap<>();
-            for (Character u : graph.keySet()) {
-                indegree.put(u, 0);
-            }
-
-            for (Character u : graph.keySet()) {
-                for (Character v : graph.get(u)) {
-                    indegree.put(v, indegree.get(v) + 1);
-                }
-            }
-
-            return indegree;
-        }
-
-        // Spend 5 minutes on here: https://www.coursera.org/lecture/algorithms-part2/topological-sort-RAMNS
-
-        private String topologicalSorting(Map<Character, Set<Character>> graph) {
-            Map<Character, Integer> indegree = getIndegree(graph);
-            // as we should return the topo order with lexicographical order
-            // we should use PriorityQueue instead of a FIFO Queue
-            Queue<Character> queue = new PriorityQueue<>();
-
-            // Just construct topology order. Chars with 0 indegree means it's not bigger than any other char, we can do BFS based on it.
-            // There will be at least one char no bigger than any other chars. So start with it.
-            // For example, graph a>b>c>d>e, put e in queue.
-            for (Character u : indegree.keySet()) {
-                if (indegree.get(u) == 0) {
-                    queue.offer(u);
-                }
-            }
+import java.util.*;
+public class AlienDictionary{
+    public class Solution{
+        private final int N = 26;
+        public String alienOrder(String[] words){
+            boolean[][] edges = new boolean[N][N];
+            int[] visited = new int[N];
+            buildGraph(words, edges, visited);
 
             StringBuilder sb = new StringBuilder();
-            while (!queue.isEmpty()) {
-                // Get "e" becase it's no bigger than any char.
-                Character head = queue.poll();
-                sb.append(head);
-                // Because now we delete e from the graph, new graph is a>b>c>d. There is no long d>e, so d indegree -= 1.
-                // Now d indegree = 0, put it in queue to continue BFS, find the next smallest char.
-                for (Character neighbor : graph.get(head)) {
-                    indegree.put(neighbor, indegree.get(neighbor) - 1);
-                    if (indegree.get(neighbor) == 0) {
-                        queue.offer(neighbor);
+            for(int i = 0; i < N; i++){
+                if(visited[i] == 0){
+                    if(!dfs(visited, edges,sb,i)) return "";
+                }
+            }
+            return sb.reverse().toString();
+        }
+        private boolean dfs(int[] visited, boolean[][] edges, StringBuilder sb, int i){
+            visited[i] = 1;
+            for(int j = 0; j < N; j++){
+                if(edges[i][j]){
+                    if(visited[j] == 1) return false;
+                    if(visited[j] == 0){
+                        if(!dfs(visited, edges, sb, j)) return false;
                     }
                 }
             }
-
-            // This is handling condition that the graph has loop like a>b>c>a, then there will be no order.
-            if (sb.length() != indegree.size()) {
-                return "";
+            visited[i] = 2;
+            sb.append((char) (i + 'a'));
+            return true;
+        }
+        private void buildGraph(String[] words, boolean[][] edges, int[] visited){
+            Arrays.fill(visited, -1);
+            for(int i = 0; i < words.length; i++){
+                for(char c : words[i].toCharArray()) visited[c - 'a'] = 0;
+                if(i > 0){
+                    String w1 = words[i - 1];
+                    String w2 = words[i];
+                    int len = Math.min(w1.length(), w2.length());
+                    for(int j = 0; j < len; j++){
+                        char c1 = w1.charAt(j);
+                        char c2 = w2.charAt(j);
+                        if(c1 != c2){
+                            edges[c1 - 'a'][c2 - 'a'] = true;
+                            break;
+                        }
+                    }
+                }
             }
-            return sb.toString();
         }
     }
-
     public static class UnitTest{
         @Test
-        public void test1(){
+        public void test(){
             Solution sol = new AlienDictionary().new Solution();
-            String[] words ={
-                    "wrt",
-                    "wrf",
-                    "er",
-                    "ett",
-                    "rftt"};
-            String result = sol.alienOrder(words);
+            String[] test = new String[]{"wrt", "wrf", "er", "ett", "rftt"};
+            String result = sol.alienOrder(test);
             assertEquals("wertf", result);
         }
     }
